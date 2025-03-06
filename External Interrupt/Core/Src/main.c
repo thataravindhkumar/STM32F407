@@ -50,10 +50,21 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 /* USER CODE BEGIN PFP */
 
+uint8_t mode = 0;
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	mode+=1;
+	if(mode>3)
+	{
+		mode=0;
+	}
+}
 
 /* USER CODE END 0 */
 
@@ -97,9 +108,29 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_12);
-	  HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
-	  HAL_Delay(500);
+	  if(mode==0)
+	  {
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, 1);
+	  }
+	  else if(mode==1)
+	  {
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, 0);
+	  }
+	  else if(mode==2)
+	  {
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, 0);
+		  HAL_Delay(1000);
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, 1);
+		  HAL_Delay(1000);
+	  }
+	  else
+	  {
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, 0);
+		  HAL_Delay(2000);
+		  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, 1);
+		  HAL_Delay(2000);
+	  }
+
   }
   /* USER CODE END 3 */
 }
@@ -158,17 +189,29 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOE_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13|GPIO_PIN_12, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOE, GPIO_PIN_0, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : PC13 PC12 */
-  GPIO_InitStruct.Pin = GPIO_PIN_13|GPIO_PIN_12;
+  /*Configure GPIO pin : PD15 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PE0 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
